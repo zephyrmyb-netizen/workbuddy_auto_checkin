@@ -1,4 +1,4 @@
-name: 双账号每日签到
+name: 三账号每日签到
 on:
   schedule:
     - cron: "0 1 * * *"
@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        account: [1, 2]
+        account: [1, 2, 3]
     name: 账号 ${{ matrix.account }}
     steps:
       - uses: actions/checkout@v4
@@ -25,11 +25,16 @@ jobs:
         env:
           TOKEN_1: ${{ secrets.WB_ACCESS_TOKEN_1 }}
           TOKEN_2: ${{ secrets.WB_ACCESS_TOKEN_2 }}
+          TOKEN_3: ${{ secrets.WB_ACCESS_TOKEN_3 }}
           ACCOUNT: ${{ matrix.account }}
           WB_RESULT_FILE: ${{ runner.temp }}/result.json
         run: |
-          if [ "$ACCOUNT" = 1 ]; then export WB_ACCESS_TOKEN="$TOKEN_1"; else export WB_ACCESS_TOKEN="$TOKEN_2"; fi
-          unset TOKEN_1 TOKEN_2
+          case "$ACCOUNT" in
+            1) export WB_ACCESS_TOKEN="$TOKEN_1" ;;
+            2) export WB_ACCESS_TOKEN="$TOKEN_2" ;;
+            3) export WB_ACCESS_TOKEN="$TOKEN_3" ;;
+          esac
+          unset TOKEN_1 TOKEN_2 TOKEN_3
           set +e
           python3 wb_auto.py
           result=$?
